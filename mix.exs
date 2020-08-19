@@ -20,6 +20,8 @@ defmodule Hangman.MixProject do
 
   defp deps do
     [
+      {:credo,           "~> 1.0.0", only: [:dev, :test],  runtime: false},
+      {:dialyxir,        "~> 0.5.1", only: [:test, :dev],  runtime: false},
       {:dictionary, path: "../dictionary"}
     ]
   end

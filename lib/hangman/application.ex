@@ -1,4 +1,5 @@
 defmodule Hangman.Application do
+  @moduledoc false
   
   use Application
 

@@ -2,12 +2,19 @@ defmodule Hangman.Game do
   
   alias __MODULE__
 
-  defstruct(
+  @type tally :: %{
+    game_state: :already_used | :bad_guess | :good_guess | :lost | :won,
+    turns_left: non_neg_integer,
+    letters:    [String.t],
+    used:       [String.t]
+  }
+
+  defstruct [
     turns_left: 7,
     game_state: :initializing,
     letters:    [],
     used:       MapSet.new()
-  )
+  ]
 
   def new_game(word) do
     %Game{

@@ -1,5 +1,7 @@
 defmodule Hangman.Game do
   
+  alias __MODULE__
+
   defstruct(
     turns_left: 7,
     game_state: :initializing,
@@ -8,24 +10,27 @@ defmodule Hangman.Game do
   )
 
   def new_game(word) do
-    %__MODULE__{
+    %Game{
       letters: word |> String.codepoints
     }
   end
   def new_game(), do: new_game(Dictionary.random_word)
 
   def make_move(game = %{game_state: state}, _guess) when state in [:won, :lost] do
-    game
+    game |> return_with_tally()
   end
   def make_move(game, guess) do
-    accept_move(game, guess, MapSet.member?(game.used, guess))
+    game
+    |> accept_move(guess, MapSet.member?(game.used, guess))
+    |> return_with_tally()
   end
 
   def tally(game) do
     %{
       game_state: game.game_state,
       turns_left: game.turns_left,
-      letters:    game.letters |> reveal_guessed(game.used)
+      letters:    game.letters |> reveal_guessed(game.used),
+      used:       MapSet.to_list(game.used)
     }
   end
 
@@ -41,9 +46,11 @@ defmodule Hangman.Game do
   end
 
   defp score_guess(game, _good_guess = true) do
-    new_state = MapSet.new(game.letters)
-    |> MapSet.subset?(game.used)
-    |> maybe_won()
+    new_state = 
+      game.letters
+      |> MapSet.new()
+      |> MapSet.subset?(game.used)
+      |> maybe_won()
 
     Map.put(game, :game_state, new_state)
   end
@@ -68,4 +75,6 @@ defmodule Hangman.Game do
 
   defp maybe_won(true),  do: :won
   defp maybe_won(_),     do: :good_guess
+
+  defp return_with_tally(game), do: {game, tally(game)}
 end

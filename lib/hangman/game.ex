@@ -11,13 +11,13 @@ defmodule Hangman.Game do
 
   def new_game(word) do
     %Game{
-      letters: word |> String.codepoints
+      letters: String.codepoints(word)
     }
   end
   def new_game(), do: new_game(Dictionary.random_word)
 
-  def make_move(game = %{game_state: state}, _guess) when state in [:won, :lost] do
-    game |> return_with_tally()
+  def make_move(game = %Game{game_state: state}, _guess) when state in [:won, :lost] do
+    return_with_tally(game)
   end
   def make_move(game, guess) do
     game
@@ -29,7 +29,7 @@ defmodule Hangman.Game do
     %{
       game_state: game.game_state,
       turns_left: game.turns_left,
-      letters:    game.letters |> reveal_guessed(game.used),
+      letters:    reveal_guessed(game.letters, game.used),
       used:       MapSet.to_list(game.used)
     }
   end
@@ -54,11 +54,11 @@ defmodule Hangman.Game do
 
     Map.put(game, :game_state, new_state)
   end
-  defp score_guess(game = %{turns_left: 1}, _not_good_guess) do
+  defp score_guess(game = %Game{turns_left: 1}, _not_good_guess) do
     Map.put(game, :game_state, :lost)
   end
 
-  defp score_guess(game = %{turns_left: turns_left}, _not_good_guess) do
+  defp score_guess(game = %Game{turns_left: turns_left}, _not_good_guess) do
     %{ game | 
       game_state: :bad_guess,
       turns_left: turns_left - 1
@@ -66,8 +66,7 @@ defmodule Hangman.Game do
   end
 
   defp reveal_guessed(letters, used) do
-    letters
-    |> Enum.map(fn letter -> reveal_letter(letter, MapSet.member?(used, letter)) end)
+    Enum.map(letters, fn letter -> reveal_letter(letter, MapSet.member?(used, letter)) end)
   end
 
   defp reveal_letter(letter, _in_word = true), do: letter
